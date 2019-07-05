@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const admin=require('firebase-admin');
 
 
-admin.initializeApp(functions.config().firestore);
+admin.initializeApp(functions.config().firestore,functions.config().database);
 const getFirestore = () => admin.firestore()
 
 exports.onComment = functions.firestore.document('posts/{projectId}/comment/{instanceId}')
@@ -196,10 +196,10 @@ exports.uploadpost = functions.firestore.document('users/{userId}/posts/{postId}
       id:context.params.postId,
       time:time,
     });
-
-   
-
 });
+
+
+
 
 
 
@@ -207,10 +207,19 @@ exports.deletepost = functions.firestore.document('users/{userId}/posts/{postId}
   .onDelete(async (snap, context) =>{
   await getFirestore().collection('users').doc(context.params.userId).update({
     t_posts: admin.firestore.FieldValue.increment(-1),
-    })
+    });
+
+    getFirestore().collection("users").doc(context.params.userId).collection('posts')
+    .doc(context.params.postId).delete();
+
+    var followerlist = await admin.database().ref('users').once();
+    await followerlist.forEach((item)=>{
+      console.log(item.uid);
+     var refrence = getFirestore().collection("users").doc(item.uid).collection('feed')
+    .doc(context.params.postId);
+    refrence.delete(); 
+    });
 });
-
-
 
 
 exports.addcrush = functions.firestore.document('users/{userId}/crush/{otherUserId}')
