@@ -211,6 +211,7 @@ exports.deletepost = functions.firestore.document('users/{userId}/posts/{postId}
 
     getFirestore().collection("users").doc(context.params.userId).collection('posts')
     .doc(context.params.postId).delete();
+    
 
     var followerlist = await admin.database().ref('users').once();
     await followerlist.forEach((item)=>{
@@ -334,7 +335,7 @@ exports.Crushrequest = functions.firestore.document('users/{userId}/crush_reques
 
 
 exports.deleteaddcrush = functions.firestore.document('users/{userId}/crush/{otherUserId}')
-  .onDelete(async (snap, context) =>{
+.onDelete(async (snap, context) =>{ 
     await getFirestore().collection('users').doc(context.params.userId).update({
       t_crush: admin.firestore.FieldValue.increment(-1),
       });
